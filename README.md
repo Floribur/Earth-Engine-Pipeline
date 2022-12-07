@@ -1,6 +1,6 @@
 # Google Earth Engine Landcover Classification in Mozambique
 
-This repository contains the files used for analyzing landcover change in Pemba-Metuge between 2018 and 2020 in paper XY.
+This repository contains the files used for analyzing landcover change in Pemba-Metuge between 2018 and 2020 in paper [XY](LINK).
 
 ## Usage
 
@@ -23,8 +23,26 @@ There, an object containing each landcover class (waterbodies, urban, vegetation
 
 There are two ways to import this script into Google Earth Engine.
 Either you download the files from this repository and manually add them to your repository one by one,
-or you use the [git repositories of Google Earth Engine](https://earthengine.googlesource.com/) to import the files
+or you use the [git repositories of Google Earth Engine](https://earthengine.googlesource.com/) to import the files.
+
+**Notice:**
+The files are interlinked with each other since most of them are imported in another file.
+To make them work in your own Earth Engine Repository you have to change the imports to fit your own repostiroy path in the following files:
+
+- main
+- classification
+- classStatistics
+- compositeCreator
+- GLCMCalculator
+- legend
 
 ## Citation
 
 If you use this code, then please cite the paper as follow:
+
+```
+@misc{
+    Citation Information...
+}
+
+```
