@@ -5,13 +5,13 @@ var landsatCollection = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2"),
 /* ////////////////////////////////////////////////////
 // Import Script Modules from this repo
 */ ////////////////////////////////////////////////////
-var areaCalculator = require("users/florianburkhardt/caboDelgado:areaCalculator");
-var indexCalculator = require("users/florianburkhardt/caboDelgado:indexCalculator");
-var params = require("users/florianburkhardt/caboDelgado:params");
-var helper = require("users/florianburkhardt/caboDelgado:helperFunctions");
-var classification = require("users/florianburkhardt/caboDelgado:classification");
-var GLCMCalculator = require("users/florianburkhardt/caboDelgado:GLCMCalculator");
-var classStatistics = require("users/florianburkhardt/caboDelgado:classStatistics");
+var areaCalculator = require("users/florianburkhardt/caboDelgado:helper/areaCalculator");
+var indexCalculator = require("users/florianburkhardt/caboDelgado:featureGeneration/indexCalculator");
+var params = require("users/florianburkhardt/caboDelgado:helper/params");
+var helper = require("users/florianburkhardt/caboDelgado:helper/helperFunctions");
+var classification = require("users/florianburkhardt/caboDelgado:classification/classification");
+var GLCMCalculator = require("users/florianburkhardt/caboDelgado:featureGeneration/GLCMCalculator");
+var classStatistics = require("users/florianburkhardt/caboDelgado:helper/classStatistics");
 var featureCollections = require("users/florianburkhardt/caboDelgado:featureCollections");
 
 /*

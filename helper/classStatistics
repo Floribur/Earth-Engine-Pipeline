@@ -1,7 +1,7 @@
 // taken from https://gis.stackexchange.com/questions/313678/a-reproducible-example-for-the-use-of-separability-measures-in-improving-selecti/323778#323778
 // book https://www.elsevier.com/books/remote-sensing/schowengerdt/978-0-12-369407-2
 
-var helper = require("users/florianburkhardt/caboDelgado:helperFunctions");
+var helper = require("users/florianburkhardt/caboDelgado:helper/helperFunctions");
 
 // Compute per-class statistics.
 
@@ -204,10 +204,8 @@ var createVectors = function (trainingData, bands) {
   });
 };
 
-
 /* Jeffries-Matusita distance Script v1.0 from Emma Izquierdo-Verdiguier */
 function JMdistance(spectrum1, spectrum2) {
-  
   var n = spectrum1.length().get([0]);
   var zeros = ee.Array(ee.List.repeat(0, n));
   var mean1 = ee.List.repeat(
@@ -259,17 +257,18 @@ function JMdistance(spectrum1, spectrum2) {
   return JM_Distance;
 }
 
-
 // MANANZEs way of calculating the JM Distance, adjusted for our purposes (automated)
 exports.calcJmDistance = function (inputImage, trainingPoints, CONFIG, year) {
-  
   //var distances = [];
   //var counter = 0;
 
   // calculate JM Distance between all classes, // TODO dynamically set number of classes
-  for (var i=0; i<1; i++) { // for all 6 classes
-    for (var j=1; j<2; j++) { // compare with all six classes
-      if (i < j) { // only if not the same class ("later class -> bigger j)
+  for (var i = 0; i < 1; i++) {
+    // for all 6 classes
+    for (var j = 1; j < 2; j++) {
+      // compare with all six classes
+      if (i < j) {
+        // only if not the same class ("later class -> bigger j)
         // get the training points of the classes to be compared
         var trainingPoint1 = trainingPoints.filter(
           ee.Filter.eq(CONFIG.CLASSIFICATION_LABEL, i)
@@ -280,21 +279,29 @@ exports.calcJmDistance = function (inputImage, trainingPoints, CONFIG, year) {
 
         // Get band values for each pixel of the training points...
         var cl1 = inputImage
-          .reduceRegion(ee.Reducer.mean(), trainingPoint1, CONFIG.COLLECTION_SCALE)
+          .reduceRegion(
+            ee.Reducer.mean(),
+            trainingPoint1,
+            CONFIG.COLLECTION_SCALE
+          )
           .toArray();
         var cl2 = inputImage
-          .reduceRegion(ee.Reducer.mean(), trainingPoint2, CONFIG.COLLECTION_SCALE)
+          .reduceRegion(
+            ee.Reducer.mean(),
+            trainingPoint2,
+            CONFIG.COLLECTION_SCALE
+          )
           .toArray();
-          
+
         // Calculate Jeffries-Matusita distance of the two spectrum and add it to the list
         var distance = JMdistance(cl1, cl2);
         //distances[counter] = distance; // add to list
         //print(distance);
         //counter = counter + 1; // increase index
-        
+
         var fileName = helper.createFileName("MANANZE_JM", CONFIG, year);
         var folderName = helper.createFolderName(CONFIG);
-      
+
         Export.table.toDrive({
           collection: ee.FeatureCollection([
             ee.Feature(null, {
@@ -306,13 +313,12 @@ exports.calcJmDistance = function (inputImage, trainingPoints, CONFIG, year) {
           fileFormat: "CSV",
           folder: folderName,
         });
-  
       }
     }
   }
-  
+
   //print(distances);
-  
+
   // Export the list of disances to google drive
   /*
   var fileName = helper.createFileName("MANANZE_JM", CONFIG, year);
@@ -345,5 +351,3 @@ exports.calcJmDistance = function (inputImage, trainingPoints, CONFIG, year) {
   });
   */
 };
-
-

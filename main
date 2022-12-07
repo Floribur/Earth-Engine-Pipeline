@@ -2,13 +2,9 @@
 // Import Script Modules
 // USER SHOULD NOT CHANGE THESE
 */ ////////////////////////////////////////////////////
-var helper = require("users/florianburkhardt/caboDelgado:helperFunctions");
-var changeDetector = require("users/florianburkhardt/caboDelgado:changeDetector");
 var compositeCreator = require("users/florianburkhardt/caboDelgado:compositeCreator");
-var areaCalculator = require("users/florianburkhardt/caboDelgado:areaCalculator");
-var params = require("users/florianburkhardt/caboDelgado:params");
-var legend = require("users/florianburkhardt/caboDelgado:legend");
-var region = require("users/florianburkhardt/caboDelgado:region");
+var legend = require("users/florianburkhardt/caboDelgado:helper/legend");
+var region = require("users/florianburkhardt/caboDelgado:helper/region");
 
 // TODO: Change "number of bands" function for legend and filenaming for Sentinel case
 // What: landsat bands = 19 at start. How many sentinels are there? Difference between these two!

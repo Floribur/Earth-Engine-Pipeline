@@ -1,4 +1,4 @@
-var params = require("users/florianburkhardt/caboDelgado:params");
+var params = require("users/florianburkhardt/caboDelgado:helper/params");
 
 /*
   This file defines the legend used in the classification

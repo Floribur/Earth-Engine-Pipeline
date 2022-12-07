@@ -1,5 +1,5 @@
 // Imports
-var params = require("users/florianburkhardt/caboDelgado:params");
+var params = require("users/florianburkhardt/caboDelgado:helper/params");
 
 /* ////////////////////////////////////////////////////
 // CLASSIFICATION

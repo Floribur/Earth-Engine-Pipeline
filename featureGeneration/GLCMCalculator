@@ -2,7 +2,7 @@
   Contains Scrips to calculate the GLCM Textures Metric for each Landsat band
   GLCM = grey level co-occurrence matrix (GLCM) measurements
 */
-var helper = require("users/florianburkhardt/caboDelgado:helperFunctions");
+var helper = require("users/florianburkhardt/caboDelgado:helper/helperFunctions");
 
 /*
   In this study, the 14 GLCM metrics proposed by [55], namely Angular Second Moment (asm),
