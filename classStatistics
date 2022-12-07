@@ -1,0 +1,349 @@
+// taken from https://gis.stackexchange.com/questions/313678/a-reproducible-example-for-the-use-of-separability-measures-in-improving-selecti/323778#323778
+// book https://www.elsevier.com/books/remote-sensing/schowengerdt/978-0-12-369407-2
+
+var helper = require("users/florianburkhardt/caboDelgado:helperFunctions");
+
+// Compute per-class statistics.
+
+exports.calculate = function (trainingData, bands, CONFIG, year) {
+  // First, add vectors
+  trainingData = createVectors(trainingData, bands);
+
+  // Make a list of objects where each object corresponds to a class.
+  // Each object stores its label and a list of all the spectral
+  // vectors that belong to that class.
+  var lists = ee.List(
+    trainingData
+      .reduceColumns({
+        reducer: ee.Reducer.toList().group(0, "class"),
+        selectors: ["Landcover", "vec"],
+      })
+      .get("groups")
+  );
+  //print(lists);
+
+  //print("List of class objects:", lists)
+
+  //print("list variable", ee.Array(ee.Dictionary(lists.get(0)).get('list')));
+  //print("array of 1D: ", ee.List(ee.Dictionary(lists.get(0)).get('list')).map(function(l) {return ee.Array(l)}));
+
+  // reduce the list to only two classes, then compute covariance and mean!
+  // Implement lots of distance measures.
+
+  // use that for next code segment as well!
+
+  var classes = ee.List.sequence(0, 5); // Look at all 6 classes
+
+  // Map over the lists to compute means and covariances.
+  // Note that the mean reducer works on arrays, and the
+  // covariance reducer works on a list of 1D arrays.
+  lists = lists.map(function (obj) {
+    if (classes.contains(ee.Dictionary(obj).get("class"))) {
+      // only calculate mean and covariance for classes that are being compared!
+      var array = ee.Array(ee.Dictionary(obj).get("list"));
+      var list = ee.List(ee.Dictionary(obj).get("list")).map(function (l) {
+        return ee.Array(l);
+      });
+      var mean = array.reduce(ee.Reducer.mean(), [0]); // mean works on arrays
+      // Watch out with this reducer.  It is an approximate solution.
+      var covariance = list.reduce(ee.Reducer.covariance()); // covariance reducer works on list of 1D arrays, because "Reducer.covariance has an output of array type Float<dimensions=2>"
+      // combine mean and covariance into the object and return
+      return ee.Dictionary(obj).combine({
+        mean: mean.transpose(),
+        covariance: covariance,
+      });
+    } else {
+      return obj;
+    }
+  });
+  //print("List of class objects with means and covariances:", lists);
+
+  /*
+  var block = classes.map(function(i) {
+    return classes.map(function(j) {
+      var mean_i = ee.Array(ee.Dictionary(lists.get(i)).get('mean'));
+      var mean_j = ee.Array(ee.Dictionary(lists.get(j)).get('mean'));
+      return mean_i.subtract(mean_j).reduce('sum', [0]).project([0])
+    })
+  })
+  print('block', block)
+  
+  var euclidean = classes.map(function(i) {
+    return classes.map(function(j) {
+      var mean_i = ee.Array(ee.Dictionary(lists.get(i)).get('mean'));
+      var mean_j = ee.Array(ee.Dictionary(lists.get(j)).get('mean'));
+      var diff = mean_i.subtract(mean_j).project([0]);
+      return diff.dotProduct(diff).sqrt();
+    })
+  })
+  print('euclidean', euclidean)
+  */
+
+  /*
+  var angular = classes.map(function(i) {
+    return classes.map(function(j) {
+      var mean_i = ee.Array(ee.Dictionary(lists.get(i)).get('mean')).project([0]);
+      var mean_j = ee.Array(ee.Dictionary(lists.get(j)).get('mean')).project([0]);
+      return mean_i.dotProduct(mean_j)
+          .divide(mean_i.dotProduct(mean_i).sqrt())
+          .divide(mean_j.dotProduct(mean_j).sqrt())
+          .acos()
+    })
+  })
+  print('angular', angular)
+  */
+
+  // C_a covariance of class A, C_b covariance of class B
+  // mean_a & mean_b: mean of class a or b
+  // MH = [ (mean_a - mean_b)^T * ( (C_a + C_b) / 2 )^-1 * (mean_a - mean_b) ] ^(1/2)
+  /*var mahalanobis = classes.map(function(i) {
+    return classes.map(function(j) {
+      var mean_i = ee.Array(ee.Dictionary(lists.get(i)).get('mean'));
+      var mean_j = ee.Array(ee.Dictionary(lists.get(j)).get('mean'));
+      var sigma_i = ee.Array(ee.Dictionary(lists.get(i)).get('covariance'));
+      var sigma_j = ee.Array(ee.Dictionary(lists.get(j)).get('covariance'));
+      return mean_i.subtract(mean_j).transpose() // 1x6
+          .matrixMultiply(sigma_i.add(sigma_j).divide(2).matrixInverse()) // 6x6
+          .matrixMultiply(mean_i.subtract(mean_j))
+          .sqrt()
+          .get([0, 0])
+    })
+  })*/
+  //print('mahalanobis', mahalanobis)
+
+  // MH = Mahalanobis
+  // C_a covariance of class A, C_b covariance of class B
+  // Bhattacharyya = 1/8*MH + 1/2 * ln [(C_a+C_b)/(2*|C_a|^(0.5)*|C_b|^0.5]
+  var bhattacharyya = classes.map(function (i) {
+    return classes.map(function (j) {
+      var mean_i = ee.Array(ee.Dictionary(lists.get(i)).get("mean"));
+      var mean_j = ee.Array(ee.Dictionary(lists.get(j)).get("mean"));
+      var sigma_i = ee.Array(ee.Dictionary(lists.get(i)).get("covariance"));
+      var sigma_j = ee.Array(ee.Dictionary(lists.get(j)).get("covariance"));
+
+      /*
+      // calculate MH
+      var part1 = mean_i.subtract(mean_j).transpose();
+      var part2 = sigma_i.add(sigma_j).divide(2);
+      var part2a = part2.matrixInverse();
+      var part3 = mean_i.subtract(mean_j);
+      var parts = ["MHs part 1, 2, 2a, 3:", part1, part2, part2a, part3];
+      return parts;
+      */
+
+      var mh = mean_i
+        .subtract(mean_j)
+        .transpose()
+        .matrixMultiply(sigma_i.add(sigma_j).divide(2).matrixInverse()) // Matrix Inverse seenms to be the problem
+        .matrixMultiply(mean_i.subtract(mean_j))
+        .get([0, 0])
+        .sqrt();
+      var t2 = sigma_i
+        .add(sigma_j)
+        .divide(2)
+        .matrixDeterminant()
+        .divide(sigma_i.matrixDeterminant().sqrt())
+        .divide(sigma_j.matrixDeterminant().sqrt())
+        .log()
+        .divide(2); // results in -infinity, maybe because of matrixDeterminate on sigma?
+      return mh.divide(8).add(t2);
+    });
+  });
+  //print('bhattacharyya', bhattacharyya)
+
+  // page 398: Jeffries-Matusita
+  // JM = [2*(1-e^(-B))]^(0.5), where B = Bhattacharyya
+  var jm = ee
+    .Array(bhattacharyya)
+    .multiply(-1)
+    .exp()
+    .multiply(-1)
+    .add(1)
+    .multiply(2)
+    .sqrt();
+
+  var fileName = helper.createFileName("JM", CONFIG, year);
+  var folderName = helper.createFolderName(CONFIG);
+
+  // Export JM Distance to Drive using the above defined agruments
+  Export.table.toDrive({
+    collection: ee.FeatureCollection([
+      ee.Feature(null, {
+        //JM: ee.Array(jm).get([0,1]), // if just two classes, else activate all of the ones below
+        class1_2: ee.Array(jm).get([0, 1]),
+        class1_3: ee.Array(jm).get([0, 2]),
+        class1_4: ee.Array(jm).get([0, 3]),
+        class1_5: ee.Array(jm).get([0, 4]),
+        class1_6: ee.Array(jm).get([0, 5]),
+        class2_3: ee.Array(jm).get([1, 2]),
+        class2_4: ee.Array(jm).get([1, 3]),
+        class2_5: ee.Array(jm).get([1, 4]),
+        class2_6: ee.Array(jm).get([1, 5]),
+        class3_4: ee.Array(jm).get([2, 3]),
+        class3_5: ee.Array(jm).get([2, 4]),
+        class3_6: ee.Array(jm).get([2, 5]),
+        class4_5: ee.Array(jm).get([3, 4]),
+        class4_6: ee.Array(jm).get([3, 5]),
+        class5_6: ee.Array(jm).get([4, 5]),
+      }),
+    ]),
+    description: fileName,
+    fileFormat: "CSV",
+    folder: folderName,
+  });
+};
+
+// turn the prediction bands into vectors.
+var createVectors = function (trainingData, bands) {
+  return trainingData.map(function (trainingPoint) {
+    // return f.set('vec', f.toArray(bands));
+    return trainingPoint.set(
+      "vec",
+      trainingPoint.toDictionary(bands).values(bands)
+    );
+  });
+};
+
+
+/* Jeffries-Matusita distance Script v1.0 from Emma Izquierdo-Verdiguier */
+function JMdistance(spectrum1, spectrum2) {
+  
+  var n = spectrum1.length().get([0]);
+  var zeros = ee.Array(ee.List.repeat(0, n));
+  var mean1 = ee.List.repeat(
+    ee.Array(spectrum1).reduce(ee.Reducer.mean(), [0]).get([0]),
+    n
+  );
+  var sus = spectrum1.subtract(mean1);
+
+  var cov_cl1 = ee.Array.cat([sus, zeros], 1)
+    .matrixTranspose()
+    .matrixMultiply(ee.Array.cat([sus, zeros], 1))
+    .get([0, 0])
+    .divide(n.subtract(1));
+
+  var mean2 = ee.List.repeat(
+    ee.Array(spectrum2).reduce(ee.Reducer.mean(), [0]).get([0]),
+    n
+  );
+  var sus2 = spectrum2.subtract(mean2);
+
+  var mean_difference = ee
+    .Array(spectrum1)
+    .reduce(ee.Reducer.mean(), [0])
+    .get([0])
+    .subtract(ee.Array(spectrum2).reduce(ee.Reducer.mean(), [0]).get([0]));
+
+  var cov_cl2 = ee.Array.cat([sus2, zeros], 1)
+    .matrixTranspose()
+    .matrixMultiply(ee.Array.cat([sus2, zeros], 1))
+    .get([0, 0])
+    .divide(n.subtract(1));
+
+  var p = cov_cl1.add(cov_cl2).divide(2);
+
+  var B1 = ee
+    .Number(0.125)
+    .multiply(mean_difference)
+    .multiply(ee.Number(1).divide(p))
+    .multiply(mean_difference);
+  var B2 = ee
+    .Number(0.5)
+    .multiply(p.divide(cov_cl1.multiply(cov_cl2).sqrt()).log());
+  var bh_distance = ee.Number(0).subtract(B1.add(B2));
+
+  var JM_Distance = ee
+    .Number(2)
+    .multiply(ee.Number(1).subtract(bh_distance.exp()));
+
+  return JM_Distance;
+}
+
+
+// MANANZEs way of calculating the JM Distance, adjusted for our purposes (automated)
+exports.calcJmDistance = function (inputImage, trainingPoints, CONFIG, year) {
+  
+  //var distances = [];
+  //var counter = 0;
+
+  // calculate JM Distance between all classes, // TODO dynamically set number of classes
+  for (var i=0; i<1; i++) { // for all 6 classes
+    for (var j=1; j<2; j++) { // compare with all six classes
+      if (i < j) { // only if not the same class ("later class -> bigger j)
+        // get the training points of the classes to be compared
+        var trainingPoint1 = trainingPoints.filter(
+          ee.Filter.eq(CONFIG.CLASSIFICATION_LABEL, i)
+        );
+        var trainingPoint2 = trainingPoints.filter(
+          ee.Filter.eq(CONFIG.CLASSIFICATION_LABEL, j)
+        );
+
+        // Get band values for each pixel of the training points...
+        var cl1 = inputImage
+          .reduceRegion(ee.Reducer.mean(), trainingPoint1, CONFIG.COLLECTION_SCALE)
+          .toArray();
+        var cl2 = inputImage
+          .reduceRegion(ee.Reducer.mean(), trainingPoint2, CONFIG.COLLECTION_SCALE)
+          .toArray();
+          
+        // Calculate Jeffries-Matusita distance of the two spectrum and add it to the list
+        var distance = JMdistance(cl1, cl2);
+        //distances[counter] = distance; // add to list
+        //print(distance);
+        //counter = counter + 1; // increase index
+        
+        var fileName = helper.createFileName("MANANZE_JM", CONFIG, year);
+        var folderName = helper.createFolderName(CONFIG);
+      
+        Export.table.toDrive({
+          collection: ee.FeatureCollection([
+            ee.Feature(null, {
+              class1_2_distance: distance,
+              type: "Mananze",
+            }),
+          ]),
+          description: fileName,
+          fileFormat: "CSV",
+          folder: folderName,
+        });
+  
+      }
+    }
+  }
+  
+  //print(distances);
+  
+  // Export the list of disances to google drive
+  /*
+  var fileName = helper.createFileName("MANANZE_JM", CONFIG, year);
+  var folderName = helper.createFolderName(CONFIG);
+
+  Export.table.toDrive({
+        collection: ee.FeatureCollection([
+      ee.Feature(null, {
+        class1_2: distances[0],
+        class1_3: distances[1],
+        class1_4: distances[2],
+        class1_5: distances[3],
+        class1_6: distances[4],
+        class2_3: distances[5],
+        class2_4: distances[6],
+        class2_5: distances[7],
+        class2_6: distances[8],
+        class3_4: distances[9],
+        class3_5: distances[10],
+        class3_6: distances[11],
+        class4_5: distances[12],
+        class4_6: distances[13],
+        class5_6: distances[14],
+        type: "Mananze",
+      }),
+    ]),
+    description: fileName,
+    fileFormat: "CSV",
+    folder: folderName,
+  });
+  */
+};
+
+

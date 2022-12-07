@@ -1,0 +1,613 @@
+/**** Start of imports. If edited, may not auto-convert in the playground. ****/
+var landsatCollection = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2"),
+    waterBodies2019 = 
+    /* color: #2005d6 */
+    /* shown: false */
+    ee.FeatureCollection(
+        [ee.Feature(
+            ee.Geometry.Point([38.61323202960861, -13.203290724433922]),
+            {
+              "LC_19": 1,
+              "system:index": "0"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.609627140692595, -13.209808459538229]),
+            {
+              "LC_19": 1,
+              "system:index": "1"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.59932745807541, -13.217997162076166]),
+            {
+              "LC_19": 1,
+              "system:index": "2"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.58284796588791, -13.226352697642932]),
+            {
+              "LC_19": 1,
+              "system:index": "3"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.57460821979416, -13.235961209499052]),
+            {
+              "LC_19": 1,
+              "system:index": "4"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.578384770087126, -13.229026408549215]),
+            {
+              "LC_19": 1,
+              "system:index": "5"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.59134520404709, -13.226436251552673]),
+            {
+              "LC_19": 1,
+              "system:index": "6"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([40.231775029634164, -12.620692627891765]),
+            {
+              "LC_19": 1,
+              "system:index": "7"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([40.24241803500526, -12.610809129948379]),
+            {
+              "LC_19": 1,
+              "system:index": "8"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([40.24705289218299, -12.614829581930215]),
+            {
+              "LC_19": 1,
+              "system:index": "9"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([40.245507939790414, -12.60829631540685]),
+            {
+              "LC_19": 1,
+              "system:index": "10"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([40.24010060641639, -12.614410787794247]),
+            {
+              "LC_19": 1,
+              "system:index": "11"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([40.47110289327596, -12.265635860669297]),
+            {
+              "LC_19": 1,
+              "system:index": "12"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([40.460803210658774, -12.252048336333639]),
+            {
+              "LC_19": 1,
+              "system:index": "13"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([40.0876453273063, -11.774263823353326]),
+            {
+              "LC_19": 1,
+              "system:index": "14"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([40.09691504166177, -11.767541762178878]),
+            {
+              "LC_19": 1,
+              "system:index": "15"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([40.084727083898095, -11.759475071908465]),
+            {
+              "LC_19": 1,
+              "system:index": "16"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([40.0931384913688, -11.776112361361621]),
+            {
+              "LC_19": 1,
+              "system:index": "17"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([40.08610037491372, -11.798125812316]),
+            {
+              "LC_19": 1,
+              "system:index": "18"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.364294047601675, -12.110911603460316]),
+            {
+              "LC_19": 1,
+              "system:index": "19"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.381288523920034, -12.094966255287657]),
+            {
+              "LC_19": 1,
+              "system:index": "20"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.38540839696691, -12.058204410555168]),
+            {
+              "LC_19": 1,
+              "system:index": "21"
+            })]),
+    grassland2019 = 
+    /* color: #48d677 */
+    /* shown: false */
+    ee.FeatureCollection(
+        [ee.Feature(
+            ee.Geometry.Point([39.1881799591944, -12.718472573208189]),
+            {
+              "LC_19": 0,
+              "system:index": "0"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([39.30078982247565, -12.573755188310447]),
+            {
+              "LC_19": 0,
+              "system:index": "1"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([39.9846887482569, -12.759326942180449]),
+            {
+              "LC_19": 0,
+              "system:index": "2"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([39.55004214181159, -12.837668487157577]),
+            {
+              "LC_19": 0,
+              "system:index": "3"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([40.19686221017096, -12.79615719482012]),
+            {
+              "LC_19": 0,
+              "system:index": "4"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.77138613595221, -12.433650057272244]),
+            {
+              "LC_19": 0,
+              "system:index": "5"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.41021059884284, -12.373294377714345]),
+            {
+              "LC_19": 0,
+              "system:index": "6"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.33742617501471, -12.586488243246189]),
+            {
+              "LC_19": 0,
+              "system:index": "7"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.42943667306159, -12.8182527666874]),
+            {
+              "LC_19": 0,
+              "system:index": "8"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([39.43880556954596, -12.378659892871323]),
+            {
+              "LC_19": 0,
+              "system:index": "9"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([39.60497378243659, -12.251199216500545]),
+            {
+              "LC_19": 0,
+              "system:index": "10"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.67937563790534, -12.807540004055127]),
+            {
+              "LC_19": 0,
+              "system:index": "11"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.78374575509284, -12.468515843860194]),
+            {
+              "LC_19": 0,
+              "system:index": "12"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([39.20946596993659, -13.19558390113242]),
+            {
+              "LC_19": 0,
+              "system:index": "13"
+            }),
+        ee.Feature(
+            ee.Geometry.Point([38.62581728829596, -13.036425569583798]),
+            {
+              "LC_19": 0,
+              "system:index": "14"
+            })]),
+    Montepuez = 
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[38.480516242398174, -13.24311122728724],
+          [38.55759266849251, -13.299917688695968],
+          [38.78933681221602, -13.300920159396593],
+          [38.95481970409447, -13.270513922513855],
+          [39.082537002803676, -13.224562836527909],
+          [39.11601150466758, -13.163726611971752],
+          [39.10862982279565, -13.092007648273709],
+          [39.064168903032794, -13.062244004339767],
+          [38.97619089467605, -13.060409131114891],
+          [38.89250524782681, -13.065421517882005],
+          [38.55278598675253, -13.137649782587719],
+          [38.493312898897294, -13.173669170879503]]]),
+    sentinelColleciton = ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED");
+/***** End of imports. If edited, may not auto-convert in the playground. *****/
+/* ////////////////////////////////////////////////////
+// Import Script Modules from this repo
+*/ ////////////////////////////////////////////////////
+var areaCalculator = require("users/florianburkhardt/caboDelgado:areaCalculator");
+var indexCalculator = require("users/florianburkhardt/caboDelgado:indexCalculator");
+var params = require("users/florianburkhardt/caboDelgado:params");
+var helper = require("users/florianburkhardt/caboDelgado:helperFunctions");
+var classification = require("users/florianburkhardt/caboDelgado:classification");
+var GLCMCalculator = require("users/florianburkhardt/caboDelgado:GLCMCalculator");
+var classStatistics = require("users/florianburkhardt/caboDelgado:classStatistics");
+var featureCollections = require("users/florianburkhardt/caboDelgado:featureCollections");
+
+/*
+  function to create an image composite for a specific year in a specific year
+  region: of type ee.???, the region for which the image composite should be generated
+  year: of type ee.Number (integer) from the year for which the image composite should be generated
+*/
+exports.run = function (CONFIG, year) {
+  // create the data based on the input
+  var startDate = ee.Date(year + "-01-01");
+  var endDate = ee.Date(year + "-12-31");
+  var prefix = year + "_";
+
+  // get trainingData and property from imports based on the year
+  var rawTrainingData = featureCollections.rawTrainingData[year]; // get raw training data
+  var trainingPointsCollection = featureCollections.createDataset(
+    rawTrainingData,
+    CONFIG
+  ); // create dataset based on that
+  //print("Dataset collection", trainingPointsCollection)
+
+  // TODO!!
+  // Now only RF can be selected
+  // set classifier. If there's none found, default to random forest
+  /*
+  var classifier = CLASSIFIERS.get(
+    CONFIG.CLASSIFIERTYPE,
+    CONFIG.RANDOM_FOREST_TREES
+  ); // get classifier with parameters*/
+  var classifier = ee.Classifier.smileRandomForest({
+    numberOfTrees: CONFIG.RANDOM_FOREST_TREES,
+    variablesPerSplit: null,
+    minLeafPopulation: 1,
+    bagFraction: 0.5,
+    maxNodes: null,
+    seed: 0,
+  });
+
+  /* ////////////////////////////////////////////////////
+  // PREPARE DATA
+  */ ////////////////////////////////////////////////////
+
+  var collection;
+  var glcm_collection;
+
+  // get Sentinel or Landsat Image Collection depending on input parameter configuration
+  if (CONFIG.IS_SENTINEL) {
+    // Get Sentinel Imagery
+    collection = sentinelColleciton
+      .filterDate(startDate, endDate)
+      .filter(
+        ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", CONFIG.MAX_CLOUD_COVERAGE)
+      ); // Pre-filter to get less cloudy granules.
+
+    // since the GLCM bands depend on the zoom factor, we don't apply any scaling to them...
+    glcm_collection = collection.median();
+
+    // add scaling to collection and mask clouds
+    collection = collection
+      .map(helper.maskS2clouds) // either mask clouds or divide to scale
+      .median()
+      //.divide(10000) // either mask clouds or use this to scale the image properly...
+      .set("system:time_start", startDate.millis()); // set start date as time-start for image
+  } else {
+    // LANDSAT in all other cases
+
+    // prepare collection
+    collection = landsatCollection
+      .filterBounds(CONFIG.REGION)
+      .filterDate(startDate, endDate) // now it takes the dates from the input parameters
+      //.sort('CLOUD_COVER', false) // sort the images by the cloud cover..., not used
+      .filterMetadata("CLOUD_COVER", "less_than", CONFIG.MAX_CLOUD_COVERAGE); // only get images with cloud coverage < config
+    //.clip(CONFIG.REGION) // not used, moved to later usage in the script according to best practices proposed by the documentation.
+
+    // since the GLCM bands depend on the zoom factor, we don't apply any scaling to them...
+    glcm_collection = collection.median();
+
+    // add scaling to collection and mask clouds
+    collection = collection
+      .map(helper.prepSrL8) // using the google scale and masking clouds script
+      .median()
+      .set("system:time_start", startDate.millis()); // set start date as time-start for image
+  }
+
+  /*
+    Calculate Pearson Correlation and print it to console
+  */
+  if (CONFIG.RUN_PEARSON_CORRELATION) {
+    var PCBands = CONFIG.PEARSON_CORRELEATION_BANDS;
+    for (var i = 0; i < PCBands.length; ++i) {
+      // for each default band
+      for (var j = 0; j < PCBands.length; ++j) {
+        // compare it with another default band
+        if (i < j) {
+          // instead of i != j to remove duplicates
+          var inputImage = collection.select([PCBands[i], PCBands[j]]); // comapre the two bands
+          var correlation = inputImage.reduceRegion({
+            reducer: ee.Reducer.pearsonsCorrelation(),
+            geometry: CONFIG.REGION,
+            scale: CONFIG.COLLECTION_SCALE,
+            //maxPixels: 2000000000, // more pixels than caboDelgado has...
+            bestEffort: true,
+          });
+          // objects contains "correlation" and "p-value".
+          print(
+            "Correlation for:",
+            inputImage.bandNames(),
+            correlation,
+            ee.Dictionary(correlation).get("correlation")
+          );
+        }
+      }
+    }
+  }
+
+  /* ////////////////////////////////////////////////////
+  // CALCULATE GLCM Textures and add to COLLECTION Bands
+  */ ////////////////////////////////////////////////////
+
+  if (CONFIG.GLCM) {
+    // calculate GLCM Bands
+    var GLCMBands = GLCMCalculator.createTextureBands(glcm_collection, CONFIG); // using glcm_collection as input bands / image collection
+
+    // Add GLCM Bands to collection image
+    collection = collection.addBands(GLCMBands); // add the newly calcualted glcm bands to collection
+  }
+
+  /* ////////////////////////////////////////////////////
+  // CALCULATE INDEXES and add to COLLECTION Bands
+  */ ////////////////////////////////////////////////////
+  if (CONFIG.VEGETATION_INDEXES) {
+    // calculate indexes
+    var NDVI = indexCalculator.NDVI(collection, CONFIG.IS_SENTINEL); // Normalized Difference Vegetation Index (NDVI)
+    var NDWI = indexCalculator.NDWI(collection, CONFIG.IS_SENTINEL); // Normalized Difference Water Index (NDWI)
+    var EVI = indexCalculator.EVI(collection, CONFIG.IS_SENTINEL); // Enhanced Vegetation Index (EVI)
+    var SAVI = indexCalculator.SAVI(collection, CONFIG.IS_SENTINEL); // Soil Adjusted Vegetation Index (SAVI)
+
+    // Add new indexes as bands to collection
+    var indexBands = ee.Image([NDVI, NDWI, EVI, SAVI]);
+    collection = collection.addBands(indexBands);
+    //print("collection with Index Bands:" , collection)
+  }
+
+  /* ////////////////////////////////////////////////////
+  // Remove unused bands and calculate final composite image that can be used for training
+  */ ////////////////////////////////////////////////////
+
+  // Final Composite Image, remove bands we don't want to use as input!
+  var compositeImage = helper.removeBands(
+    collection,
+    CONFIG.BANDS_TO_BE_REMOVED
+  );
+  // compositeImage = compositeImage.toInt32(); // cast all of them to the same type.. if needed for calculations or smth.
+  print(prefix + "Composite Image", compositeImage);
+
+  /* ////////////////////////////////////////////////////
+  // Show True Color and Indexes as layers on the map
+  */ ////////////////////////////////////////////////////
+
+  // Sentinel True Color Params or Landsat True Color Params
+  var trueColorParams = params.trueColorLandsat;
+  if (CONFIG.IS_SENTINEL) {
+    trueColorParams = params.trueColorSentinel;
+  }
+
+  Map.addLayer(
+    collection.clip(CONFIG.REGION),
+    trueColorParams,
+    prefix + "True Color",
+    !CONFIG.DEACTIVATE_MAP_DRAWING && true
+  ); // TRUE COLOR USES COLLECTION INSTEAD OF compositeImage, since we might remove SR_B4 for the classification!
+  if (CONFIG.VEGETATION_INDEXES) {
+    Map.addLayer(
+      compositeImage.clip(CONFIG.REGION),
+      params.NDVI,
+      prefix + "Normalized Difference Vegetation Index (NDVI)",
+      false
+    );
+    Map.addLayer(
+      compositeImage.clip(CONFIG.REGION),
+      params.EVI,
+      prefix + "Enhanced Vegetation Index (EVI)",
+      false
+    );
+    Map.addLayer(
+      compositeImage.clip(CONFIG.REGION),
+      params.NDWI,
+      prefix + "Normalized Difference Water Index (NDWI)",
+      false
+    );
+    Map.addLayer(
+      compositeImage.clip(CONFIG.REGION),
+      params.SAVI,
+      prefix + "Soil Adjusted Vegetation Index (SAVI)",
+      false
+    );
+  }
+  /* ////////////////////////////////////////////////////
+  // CLASSIFICATION
+  */ ////////////////////////////////////////////////////
+
+  // create training data (map polygons to pixel values)
+  var dataset = classification.createTrainingData(
+    compositeImage,
+    trainingPointsCollection,
+    CONFIG
+  );
+  print("Dataset:", dataset.size());
+
+  // calculate seperability measurements?
+  if (CONFIG.MAKE_SEPERABILITY_ANALYSIS) {
+    // calculate pre-class statistics
+    if (CONFIG.JM_DISTANCE_MANANZE) {
+      classStatistics.calcJmDistance(compositeImage, trainingPointsCollection, CONFIG, year); // sosditos way
+    } else {
+      classStatistics.calculate(
+        dataset,
+        compositeImage.bandNames(),
+        CONFIG,
+        year
+      ); // my way
+    }
+  }
+
+  // Classification of image
+  if (CONFIG.MAKE_CLASSIFICATION) {
+    // split into training and validation set
+    var splitDataset = featureCollections.splitData(
+      dataset,
+      CONFIG.FEATURE_COLLECTION_SPLIT
+    );
+    var trainingData = splitDataset.training;
+    var validationData = splitDataset.validation;
+    print(
+      "Dataset size: ",
+      dataset.size(),
+      "Training and validation was split by",
+      CONFIG.FEATURE_COLLECTION_SPLIT,
+      "Training data size: ",
+      trainingData.size(),
+      "Validation data size:",
+      validationData.size()
+    );
+
+    //Train the classifier with the training data
+    var trainedClassifier = classification.trainClassifier(
+      classifier,
+      trainingData,
+      CONFIG.CLASSIFICATION_LABEL,
+      compositeImage
+    );
+
+    // Explain trained classifier
+    if (CONFIG.EXPLAIN_CLASSIFIER) {
+      print("Results of trained classifier", trainedClassifier.explain());
+    }
+
+    // Validate trained classifier using the validation data and trained classifier
+    classification.createValidationErrorMatrix(
+      validationData,
+      trainedClassifier,
+      CONFIG
+    );
+
+    // Classify image based on trained classifier
+    var classifiedImage = classification.createClassifiedImage(
+      compositeImage,
+      trainedClassifier
+    );
+    //  print("classifiedImage", classifiedImage)
+    //classifiedImage = classifiedImage.clip(region); // finally clip region in the end...
+
+    //Map the classified image
+    Map.addLayer(
+      classifiedImage.clip(CONFIG.REGION),
+      params.classifiedImage,
+      prefix + "Classified Image",
+      !CONFIG.DEACTIVATE_MAP_DRAWING && true
+    );
+
+    var imageFileName = helper.createFileName("CLASSIFIED-IMAGE", CONFIG, year);
+    var imageFolderName = helper.createFolderName(CONFIG);
+
+    // Exportm classified image
+    Export.image.toDrive({
+      image: classifiedImage,
+      description: imageFileName,
+      folder: imageFolderName,
+      region: CONFIG.REGION,
+      scale: CONFIG.COLLECTION_SCALE,
+      // crs: 'EPSG:5070',
+      skipEmptyTiles: true, // skip masked regions
+      fileFormat: "GeoTIFF",
+      maxPixels: 10000000000000,
+    });
+
+    classification.classificationChart(
+      classifiedImage,
+      params.classNames,
+      CONFIG
+    );
+
+    // Calculate the accuracy of the classification using the confusion matrix
+    //var confusionMatrix = classification.createConfusionMatrixAndPrintAccuracy(trainedClassifier)
+    // todo later, correctly...
+
+    // add each class to the map, individually
+    if (CONFIG.SHOW_CLASS_INDIVIDUALLY) {
+      for (var classNr = 0; classNr <= 5; classNr++) {
+        var mapOfClass = classifiedImage
+          .clip(CONFIG.REGION)
+          .eq(classNr)
+          .selfMask(); // only show the the specific class
+        Map.addLayer(
+          mapOfClass,
+          params.oneClassImage(classNr), // get the Palette-Color from this class
+          prefix + params.classNames[classNr] + " (" + classNr + ")", // get name of that class from params
+          false
+        );
+      }
+    }
+  }
+
+  /* ////////////////////////////////////////////////////
+  // Area Calculation of each class
+  */ ////////////////////////////////////////////////////
+  var areaOfClasses = [];
+  // calculate area sizes, if classification was made
+  if (CONFIG.MAKE_CLASSIFICATION) {
+    areaOfClasses = areaCalculator.calculateAreaOfClasses(
+      classifiedImage,
+      CONFIG,
+      "class"
+    );
+  }
+
+  /* ////////////////////////////////////////////////////
+  // RETURN
+  */ ////////////////////////////////////////////////////
+
+  // create Object to be returned
+  var response = {
+    classifierType: CONFIG.CLASSIFIERTYPE,
+    prefix: prefix,
+    image: compositeImage,
+    startDate: startDate,
+    endDate: endDate,
+    classifiedImage: CONFIG.MAKE_CLASSIFICATION ? classifiedImage : false, // only return if calculated
+    areaOfClasses: areaOfClasses, // the calculated area based on the classification for each individual class in km^2
+  };
+
+  return response;
+};

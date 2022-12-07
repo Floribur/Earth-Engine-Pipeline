@@ -1,0 +1,67 @@
+/* 
+  Contains Scrips relating to detect change between two maps
+*/
+
+// this function maps image2 over image 1 to detect gains and does the reverse to detect losses
+// gainColor usually 'blue'
+// lossColor usually 'red'
+// noChangeColor usually 'green'
+// numberOfArea = bitCodeOfArea? => 1 for waterbodies maybe?
+exports.detectChangeAndMap = function (
+  classifiedImage1,
+  classifiedImage2,
+  numberOfArea,
+  CONFIG
+) {
+  // only get the class of that image, e.g. only show waterbodies if waterbodies = numberOfArea (code)
+  var classOfImage1 = classifiedImage1.eq(numberOfArea);
+  var classOfImage2 = classifiedImage2.eq(numberOfArea);
+
+  // mask gain image and calculate how much the gain was
+  var gainImage = classOfImage1.mask(classOfImage2);
+  var gainArea = calculateGainOrLoss(gainImage, CONFIG);
+
+  // mask loss image and calculate how much the loss was
+  var lossImage = classOfImage2.mask(classOfImage1);
+  var lossArea = calculateGainOrLoss(lossImage, CONFIG);
+
+  var responseObject = {
+    gainImage: gainImage,
+    gainArea: gainArea,
+    lossImage: lossImage,
+    lossArea: lossArea,
+  };
+
+  return responseObject;
+};
+
+// Calculate the gain or loss in KM^2 and print the result to the console
+// todo: check if one could also use the function "calculateAreaOfClasses" from areaCalculator....
+function calculateGainOrLoss(gainOrLossImage, CONFIG) {
+  // Convert the pixels to m^2 and add bands of the classified image (give each pixel the unit of square metres)
+  var areaImage = ee.Image.pixelArea().addBands(gainOrLossImage);
+
+  // Reduce all pixels to a statistic and sum it in each group
+  var areas = areaImage.reduceRegion({
+    reducer: ee.Reducer.sum().group({
+      groupField: 1, // 1 always correct?
+      groupName: "class", // todo check if correct
+    }),
+    geometry: CONFIG.REGION,
+    scale: CONFIG.COLLECTION_SCALE,
+    maxPixels: 1e10,
+  });
+
+  // Make a list with reduced group and get the 'groups'
+  var classAreas = ee.List(areas.get("groups"));
+
+  // Map over a function to extract individual class area
+  var classAreaLists = classAreas.map(function (item) {
+    var areaDict = ee.Dictionary(item);
+    var classNumber = ee.Number(areaDict.get("class")).format();
+    var area = ee.Number(areaDict.get("sum")).divide(1e6).round();
+    return ee.Dictionary({ classNumber: classNumber, area: area });
+  });
+
+  return classAreaLists;
+}
