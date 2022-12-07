@@ -19,6 +19,10 @@ There, an object containing each landcover class (waterbodies, urban, vegetation
 - Also, at the moment, only regions in Mozambique are supported (which could be extended by importing the region boundaries in the `region` file).
 - At this time, the defined classes are static and can't be changed.
 
+### Region
+
+- Import the region data table.
+
 ## Import into Google Earth Engine
 
 There are two ways to import this script into Google Earth Engine.
