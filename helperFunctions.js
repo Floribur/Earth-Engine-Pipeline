@@ -1,6 +1,6 @@
-/* 
-  Contains helper functions for other operations
-*/
+/* ////////////////////////////////////////////////////
+    Contains helper functions for other operations
+*/ ////////////////////////////////////////////////////
 
 // Applies scaling factors for true color image
 // https://developers.google.com/earth-engine/datasets/catalog/LANDSAT_LC08_C02_T1_L2#bands
@@ -11,22 +11,6 @@ exports.applyScaleFactors = function (image) {
     .addBands(opticalBands, null, true)
     .addBands(thermalBands, null, true);
 };
-
-/*
-  // not used at the moment, we use prepSrL8 instead as proposed by the EE documentation
-  // This function applies a cloud mask to every image in the collection
-  exports.maskClouds = function(image) {
-    // Bits 3 and 5 are cloud shadow and cloud, respectively.
-    var cloudShadowBitMask = (1 << 3);
-    var cloudsBitMask = (1 << 5);
-    // Get the pixel QA band.
-    var qa = image.select('QA_PIXEL');
-    // Both flags should be set to zero, indicating clear conditions.
-    var mask = qa.bitwiseAnd(cloudShadowBitMask).eq(0)
-                  .and(qa.bitwiseAnd(cloudsBitMask).eq(0));
-    return image.updateMask(mask);
-  }
-*/
 
 // Define a function that scales and masks Landsat 8 surface reflectance images
 // taken from https://developers.google.com/earth-engine/guides/classification
@@ -86,17 +70,18 @@ exports.maskS2clouds = function (image) {
     .eq(0)
     .and(qa.bitwiseAnd(cirrusBitMask).eq(0));
 
-  return image.updateMask(mask).divide(10000);
+  //return image.divide(10000); // without masking clouds
+  return image.updateMask(mask).divide(10000); // with masking clouds
 };
 
 // creates a unique file name based on the parameters and year
-exports.createFileName = function (prefix, CONFIG, year) {
-  var vegetationIndexes = getVegetationIndexes(CONFIG);
+exports.createFileName = function (prefix, CONFIG, disableSeed) {
+  var vegetationCombination = getVegetationCombination(CONFIG);
   var bands = sumOfBands(CONFIG);
   var textureCombination = getTextureCombination(CONFIG, false);
   var date = "";
-  if (year) {
-    date = ee.String("_YEAR-").cat(ee.Number(year).format()); // format year to string.
+  if (CONFIG.YEAR) {
+    date = ee.String("_YEAR-").cat(ee.Number(CONFIG.YEAR).format()); // format year to string.
   }
 
   // create file name based on inputs...
@@ -104,19 +89,28 @@ exports.createFileName = function (prefix, CONFIG, year) {
     .String(prefix) // e.g., JM or IMAGE etc.
     .cat("_")
     .cat(textureCombination) // add texture combination
-    .cat("_V-")
-    .cat(vegetationIndexes) // add number of vegetation indexes
-    .cat("_F-")
+    .cat("_")
+    .cat(vegetationCombination) // add number of vegetation indexes
+    .cat("_Bands-")
     .cat(bands) // add number of bands
     .cat("_")
     .cat(CONFIG.COLLECTION) // add collection type
     .cat(date); // add date if year is present
+  if (!disableSeed) {
+    // add seeds to filename
+    ee.String(file_name)
+      .cat("_SplitSeed-")
+      .cat(ee.Number(CONFIG.SPLIT_SEED).format()) // add seed used to split data
+      .cat("_RFSeed-")
+      .cat(ee.Number(CONFIG.RF_SEED).format()); // add seed used as input for RF training
+  }
+
   return file_name.getInfo(); // bring file_name to client side!
 };
 
 // creates a unique folder name based on the parameters and year
 exports.createFolderName = function (CONFIG) {
-  var vegetationIndexes = getVegetationIndexes(CONFIG);
+  var vegetationCombination = getVegetationCombination(CONFIG);
   var bands = sumOfBands(CONFIG);
   var textureCombination = getTextureCombination(CONFIG, true);
 
@@ -125,49 +119,51 @@ exports.createFolderName = function (CONFIG) {
     .String(CONFIG.REGION_NAME) // e.g., JM or IMAGE etc.
     .cat("/")
     .cat(textureCombination) // add texture combination
-    .cat("/Vegetation-")
-    .cat(vegetationIndexes) // add number of vegetation indexes
-    .cat("/Features-")
+    .cat("/")
+    .cat(vegetationCombination) // add number of vegetation indexes
+    .cat("/Bands-")
     .cat(bands) // add number of bands
     .cat("/")
     .cat(CONFIG.COLLECTION); // add collection type
   return file_name.getInfo(); // bring file_name to client side!
 };
 
-function getVegetationIndexes(CONFIG) {
-  if (CONFIG.VEGETATION_INDEXES) {
-    return "4";
-  }
-  return "0";
+// return vegetation combination name
+function getVegetationCombination(CONFIG) {
+  return CONFIG.VEGETATION_INDEX_COMBINATION;
+  // deprecated: returns the number of vegetation indeces as a string
+  //return ee.Number(CONFIG.VEGETATION_INDECES.length).format(); // return as STRING!
 }
 
 // calculate the number of bands based on the config for automatic file naming
 function sumOfBands(CONFIG) {
   var sum = 0;
-  if (CONFIG.GLCM) {
-    sum = CONFIG.GLCM_RELEVANT_BANDS.length * CONFIG.GLCM_BANDS_FILTER.length; //
+  sum = CONFIG.GLCM_RELEVANT_BANDS.length * CONFIG.GLCM_BANDS_FILTER.length; // add number of GLCM bands
+  sum = CONFIG.VEGETATION_INDECES.length; // add number of indexes
+
+  if (CONFIG.IS_SENTINEL) {
+    // sentinel has 23 default bands
+    sum = sum + (23 - CONFIG.BANDS_TO_BE_REMOVED.length);
+  } else {
+    // landsat has 19 default bands
+    sum = sum + (19 - CONFIG.BANDS_TO_BE_REMOVED.length); // there are 19 default bands. Remove all bands that will be removed automatically in the composite
   }
-  if (CONFIG.VEGETATION_INDEXES) {
-    sum = sum + 4; // add all 4 vegetation indexes
-  }
-  sum = sum + (19 - CONFIG.BANDS_TO_BE_REMOVED.length); // there are 19 default bands. Remove all bands that will be removed automatically in the composite
+
   return ee.Number(sum).format(); // return as STRING!
 }
 
 function getTextureCombination(CONFIG, folder) {
-  var textureName = "NIL"; // defaults to NIL
-  if (CONFIG.GLCM) {
-    // add Texture Combination and Window Size if GLCM was used
-    textureName = CONFIG.GLCM_COMBINATION; // T1,T2,T3,T4 etc.
-    var windowsizeGap = "_W-";
-    if (folder) {
-      // if folder, use other name
-      windowsizeGap = "/WindowSize-";
-    }
-    textureName = ee
-      .String(textureName)
-      .cat(windowsizeGap)
-      .cat(ee.Number(CONFIG.GLCM_WINDOW_SIZE).format()); // insert GLCM windowsize into filename
+  // add Texture Combination and Window Size if GLCM was used
+  var textureName = CONFIG.GLCM_COMBINATION; // T1,T2,T3,T4 etc.
+  var windowsizeGap = "_W-";
+  if (folder) {
+    // if folder, use other name
+    windowsizeGap = "/WindowSize-";
   }
+  textureName = ee
+    .String(textureName)
+    .cat(windowsizeGap)
+    .cat(ee.Number(CONFIG.GLCM_WINDOW_SIZE).format()); // insert GLCM windowsize into filename
+
   return textureName;
 }

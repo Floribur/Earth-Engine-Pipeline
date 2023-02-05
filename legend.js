@@ -1,68 +1,71 @@
-var params = require("users/florianburkhardt/caboDelgado:helper/params");
-
 /*
   This file defines the legend used in the classification
 */
 
-/*
- CREATE LEGEND FOR CLASSES
-*/
-// set position of panel
-var legend = ui.Panel({
-  style: {
-    position: "bottom-left",
-    padding: "8px 15px",
-  },
-});
+/* ////////////////////////////////////////////////////
+// CLASSES LEGEND
+// This legend creates an overlay showing the 6 classes (waterbodies etc.) and their corresponding colours
+*/ ////////////////////////////////////////////////////
 
-// Create legend title
-var legendTitle = ui.Label({
-  value: "Classes",
-  style: {
-    fontWeight: "bold",
-    fontSize: "18px",
-    margin: "0 0 4px 0",
-    padding: "0",
-  },
-});
-
-// Add the title to the panel
-legend.add(legendTitle);
-
-// Creates and styles 1 row of the legend.
-var makeRow = function (color, name) {
-  // Create the label that is actually the colored box.
-  var colorBox = ui.Label({
+exports.showClasses = function (CONFIG, params) {
+  // set position of panel
+  var legend = ui.Panel({
     style: {
-      backgroundColor: "#" + color,
-      // Use padding to give the box height and width.
-      padding: "8px",
-      margin: "0 0 4px 0",
+      position: "bottom-left",
+      padding: "8px 15px",
     },
   });
 
-  // Create the label filled with the description text.
-  var description = ui.Label({
-    value: name,
-    style: { margin: "0 0 4px 6px" },
+  // Create legend title
+  var legendTitle = ui.Label({
+    value: "Classes",
+    style: {
+      fontWeight: "bold",
+      fontSize: "18px",
+      margin: "0 0 4px 0",
+      padding: "0",
+    },
   });
 
-  // return the panel
-  return ui.Panel({
-    widgets: [colorBox, description],
-    layout: ui.Panel.Layout.Flow("horizontal"),
-  });
+  // Add the title to the panel
+  legend.add(legendTitle);
+
+  // Creates and styles 1 row of the legend.
+  var makeRow = function (color, name) {
+    // Create the label that is actually the colored box.
+    var colorBox = ui.Label({
+      style: {
+        backgroundColor: "#" + color,
+        // Use padding to give the box height and width.
+        padding: "8px",
+        margin: "0 0 4px 0",
+      },
+    });
+
+    // Create the label filled with the description text.
+    var description = ui.Label({
+      value: name,
+      style: { margin: "0 0 4px 6px" },
+    });
+
+    // return the panel
+    return ui.Panel({
+      widgets: [colorBox, description],
+      layout: ui.Panel.Layout.Flow("horizontal"),
+    });
+  };
+  // Add color and and names
+  for (var i = 0; i < params.classPalette.length; i++) {
+    legend.add(makeRow(params.classPalette[i], params.classNames[i]));
+  }
+
+  Map.add(legend);
 };
-// Add color and and names
-for (var i = 0; i < params.classPalette.length; i++) {
-  legend.add(makeRow(params.classPalette[i], params.classNames[i]));
-}
 
-exports.classes = legend;
-
-/*
- CREATE LEGEND FOR CONFIGS
-*/
+/* ////////////////////////////////////////////////////
+// CONFIG LEGEND
+// This legend is generated based on the parameters set in the config
+*/ ////////////////////////////////////////////////////
 
 exports.showConfig = function (CONFIG) {
   var configLegend = ui.Panel({
@@ -119,18 +122,25 @@ exports.showConfig = function (CONFIG) {
     });
   };
 
-  // calculate the number of bands based on the config to show in the legend...
-  var sumOfBands = function () {
+  // calculate the number of bands based on the config for showing in the legend
+  function sumOfBands(CONFIG) {
     var sum = 0;
     if (CONFIG.GLCM) {
       sum = CONFIG.GLCM_RELEVANT_BANDS.length * CONFIG.GLCM_BANDS_FILTER.length; //
     }
     if (CONFIG.VEGETATION_INDEXES) {
-      sum = sum + 4; // add all 4 vegetation indexes
+      sum = sum + 5; // add all 4 vegetation indexes
     }
-    sum = sum + (19 - CONFIG.BANDS_TO_BE_REMOVED.length); // there are 19 default bands. Remove all bands that will be removed automatically in the composite
+    if (CONFIG.IS_SENTINEL) {
+      // sentinel has 23 default bands
+      sum = sum + (23 - CONFIG.BANDS_TO_BE_REMOVED.length);
+    } else {
+      // landsat has 19 default bands
+      sum = sum + (19 - CONFIG.BANDS_TO_BE_REMOVED.length); // there are 19 default bands. Remove all bands that will be removed automatically in the composite
+    }
+
     return sum;
-  };
+  }
 
   configLegend.add(addPair("Region", CONFIG.REGION_NAME));
   configLegend.add(addPair("Collection", CONFIG.COLLECTION));
@@ -153,7 +163,7 @@ exports.showConfig = function (CONFIG) {
     configLegend.add(addPair("Texture Combination", CONFIG.GLCM_COMBINATION));
     configLegend.add(addPair("GLCM Window Size", CONFIG.GLCM_WINDOW_SIZE));
   }
-  configLegend.add(addPair("Number of Bands", sumOfBands()));
+  configLegend.add(addPair("Number of Bands", sumOfBands(CONFIG)));
 
   Map.add(configLegend);
   //return configLegend;

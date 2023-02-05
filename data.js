@@ -85,6 +85,42 @@ var pembaAgriculture = ee.FeatureCollection(
   ),
   Metuge2020_Waterbodies = ee.FeatureCollection(
     "projects/ee-swisstph-cabodelgado/assets/Metuge2020_Waterbodies"
+  ),
+  Metuge2019_Agriculture = ee.FeatureCollection(
+    "projects/ee-swisstph-cabodelgado/assets/Metuge2019_Agriculture"
+  ),
+  Metuge2019_BareSoils = ee.FeatureCollection(
+    "projects/ee-swisstph-cabodelgado/assets/Metuge2019_BareSoils"
+  ),
+  Metuge2019_Grassland = ee.FeatureCollection(
+    "projects/ee-swisstph-cabodelgado/assets/Metuge2019_Grassland"
+  ),
+  Metuge2019_NaturalVegetation = ee.FeatureCollection(
+    "projects/ee-swisstph-cabodelgado/assets/Metuge2019_NaturalVegetation"
+  ),
+  Metuge2019_Urban = ee.FeatureCollection(
+    "projects/ee-swisstph-cabodelgado/assets/Metuge2019_Urban"
+  ),
+  Metuge2019_Waterbodies = ee.FeatureCollection(
+    "projects/ee-swisstph-cabodelgado/assets/Metuge2019_Waterbodies"
+  ),
+  Pemba2019_Waterbodies = ee.FeatureCollection(
+    "projects/ee-swisstph-cabodelgado/assets/Pemba2019_Waterbodies"
+  ),
+  Pemba2019_Urban = ee.FeatureCollection(
+    "projects/ee-swisstph-cabodelgado/assets/Pemba2019_Urban"
+  ),
+  Pemba2019_NaturalVegetation = ee.FeatureCollection(
+    "projects/ee-swisstph-cabodelgado/assets/Pemba2019_NaturalVegetation"
+  ),
+  Pemba2019_Grassland = ee.FeatureCollection(
+    "projects/ee-swisstph-cabodelgado/assets/Pemba2019_Grassland"
+  ),
+  Pemba2019_BareSoils = ee.FeatureCollection(
+    "projects/ee-swisstph-cabodelgado/assets/Pemba2019_BareSoils"
+  ),
+  Pemba2019_Agriculture = ee.FeatureCollection(
+    "projects/ee-swisstph-cabodelgado/assets/Pemba2019_Agriculture"
   );
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 /* ////////////////////////////////////////////////////
@@ -109,22 +145,14 @@ var pembaAgriculture = ee.FeatureCollection(
 // Define Datasets and classes
 */ ////////////////////////////////////////////////////
 
-// DATA OF PEMBA-METUGE 2018
-var rawData2018 = {
-  waterbodies: pembaWaterbodies
-    .merge(metuge2018Waterbodies)
-    .merge(pembaMetuge_GEE_2018_Waterbodies),
-  urban: pembaUrban.merge(metuge2018Urban).merge(pembaMetuge_GEE_2018_Urban),
-  vegetation: pembaNaturalVegetation
-    .merge(metuge2018NaturalVegetationForest)
-    .merge(pembaMetuge_GEE_2018_NaturalVegetation),
-  grassland: pembaGrassland.merge(metuge2018Grassland), // no FE yet from GEE
-  bareSoils: pembaBareSoils
-    .merge(metuge2018BareSoils)
-    .merge(pembaMetuge_GEE_2018_BareSoils),
-  agriculture: pembaAgriculture
-    .merge(metuge2018Agriculture)
-    .merge(pembaMetuge_GEE_2018_Agriculture),
+// DATA OF PEMBA-METUGE 2019
+var rawData2019 = {
+  waterbodies: Pemba2019_Waterbodies.merge(Metuge2019_Waterbodies),
+  urban: Pemba2019_Urban.merge(Metuge2019_Urban),
+  vegetation: Pemba2019_NaturalVegetation.merge(Metuge2019_NaturalVegetation),
+  grassland: Pemba2019_Grassland.merge(Metuge2019_Grassland),
+  bareSoils: Pemba2019_BareSoils.merge(Metuge2019_BareSoils),
+  agriculture: Pemba2019_Agriculture.merge(Metuge2019_Agriculture),
 };
 
 // DATA OF PEMBA-METUGE 2020
@@ -138,31 +166,30 @@ var rawData2020 = {
 };
 
 /* ////////////////////////////////////////////////////
-// Create Datasets and Export Trainingdata
+// Define on a year by year basis
 */ ////////////////////////////////////////////////////
 
-exports.rawTrainingData = {
-  2018: rawData2018,
+var rawTrainingData = {
+  2019: rawData2019,
   2020: rawData2020,
 };
 
-// usage in other files like this:
-//var trainingData2018 = createDataset(rawData2018); // Pemba-metuge 2018
-//var trainingData2020 = createDataset(rawData2020); // Pemba-metuge 2020
-
 /* ////////////////////////////////////////////////////
-// Helper Functions
+// Create Datasets
 */ ////////////////////////////////////////////////////
 
 /*
   Function to create the dataSet that can be used for training
-  rawData: Custom object using a dictionary with the keys {waterbodies, urban, vegetation, grassland, bareSoils, agriculture} and the related featureCollection for each key
-  config: global config dictionary from main file
   returns Object from splitData Function {training: ee.FeatureCollection, validation: ee.FeatureCollection}
 */
-exports.createDataset = function (rawData, CONFIG) {
+exports.createDataset = function (CONFIG) {
+  var rawData = rawTrainingData[CONFIG.YEAR]; // get polygons based on year
+
   var property = CONFIG.CLASSIFICATION_LABEL;
-  print("Number of pixels per class: ", getNumOfPixelsPerClass(rawData));
+  if (CONFIG.SHOW_NUMBER_OF_POLYGONS) {
+    print("Number of pixels per class: ", getNumOfPixelsPerClass(rawData));
+  }
+
   //print("Max Area Size: ", maxAreaSize);
   // todo: then duplicate the minority classes so they are +/- the same size as maxArea
   var transformedData = transformData(rawData, property);
@@ -178,12 +205,19 @@ exports.createDataset = function (rawData, CONFIG) {
   Input: Feature Collection
   Output: Object of form {training: ee.FeatureCollection, validation: ee.FeatureCollection}
 */
-exports.splitData = function (dataset, splitratio) {
-  // The randomColumn() method will add a column of uniform random numbers in a column named 'random' by default.
-  dataset = dataset.randomColumn();
+exports.splitData = function (CONFIG, dataset) {
+  var columnName = "random";
+  // The randomColumn() method will add a column of uniform random numbers
+  // in a column named 'random' by default.
+  // The SEED is used to create reproducable results for random functions
+  dataset = dataset.randomColumn(columnName, CONFIG.SPLIT_SEED);
 
-  var training = dataset.filter(ee.Filter.lt("random", splitratio));
-  var validation = dataset.filter(ee.Filter.gte("random", splitratio));
+  var training = dataset.filter(
+    ee.Filter.lt(columnName, CONFIG.FEATURE_COLLECTION_SPLIT)
+  );
+  var validation = dataset.filter(
+    ee.Filter.gte(columnName, CONFIG.FEATURE_COLLECTION_SPLIT)
+  );
 
   return {
     training: training,

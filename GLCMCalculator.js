@@ -2,7 +2,6 @@
   Contains Scrips to calculate the GLCM Textures Metric for each Landsat band
   GLCM = grey level co-occurrence matrix (GLCM) measurements
 */
-var helper = require("users/florianburkhardt/caboDelgado:helper/helperFunctions");
 
 /*
   In this study, the 14 GLCM metrics proposed by [55], namely Angular Second Moment (asm),
@@ -21,7 +20,7 @@ var helper = require("users/florianburkhardt/caboDelgado:helper/helperFunctions"
   CONFIG: the global CONFIG as defined in the main file
   returns the image with the new GLCM bands
 */
-exports.createTextureBands = function (image, CONFIG) {
+exports.createTextureBands = function (image, CONFIG, helper) {
   var bands = CONFIG.GLCM_RELEVANT_BANDS;
 
   // get the relevant bands and cast them to int32
