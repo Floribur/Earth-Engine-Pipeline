@@ -126,7 +126,7 @@ And then you can add this to the collection:
 ### Region of interest
 
 For the selection of the region we use the shape files from https://data.humdata.org/dataset/cod-ab-moz.
-But you could youse your own shapefiles and definition as well.
+But you could use your own shapefiles and definition as well.
 
 How to adjust the region:
 
