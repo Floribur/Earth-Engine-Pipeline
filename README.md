@@ -1,4 +1,4 @@
-# Earth Engine Pipeline
+# Earth Engine Classification Pipeline
 
 This repository contains the scripts that were used in the paper _"Using Google Earth Engine to track changes in land use after natural disaster in Cabo Delgado, Mozambique"_.
 
